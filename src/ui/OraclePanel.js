@@ -59,8 +59,8 @@ export class OraclePanel {
     this.tossBtn = makeButton(scene, CX + 140, BTN_Y, 240, 38, TEXT.oracle.toss, () => this.pick('toss'), { fontSize: '18px' });
     this.descendBtn = makeButton(scene, CX, BTN_Y, 260, 38, TEXT.oracle.descend, () => this.finishBlessing(), { fontSize: '18px' });
 
-    // Opens the Learn More chapter on why about six blessings is best.
-    this.learnBtn = makeButton(scene, LEFT + PW - 86, TOP + 40, 136, 28, TEXT.tutorial.learnMore, () => scene.guide?.open(5), { fontSize: '14px' });
+    // Opens the Grover guide at the topic on why about six blessings is best.
+    this.learnBtn = makeButton(scene, LEFT + PW - 116, TOP + 40, 196, 28, TEXT.tutorial.quantum, () => scene.guide?.open(5), { fontSize: '14px' });
 
     this.container.add([this.runText, this.oddsText, this.status, this.chart.gfx, this.note, this.cost,
       this.askBtn, this.tossBtn, this.descendBtn, this.learnBtn]);

@@ -360,7 +360,7 @@ const DEMOS = {
     let marked = false;
     chart.setAmps(amps, false);
     const readout = g.label(area.x, area.y + 40, '', { fontSize: '14px', color: '#ffe58a' }).setOrigin(0, 0.5);
-    const markBtn = g.button(area.x + 66, area.y + 14, 128, L.mark, () => {
+    const markBtn = g.button(area.x + 80, area.y + 14, 160, L.mark, () => {
       if (marked) return;
       marked = true;
       amps = applyOracle(amps, TARGET);
@@ -368,7 +368,7 @@ const DEMOS = {
       chart.setAmps(amps, true, 400);
       refresh();
     });
-    const reflectBtn = g.button(area.x + 206, area.y + 14, 140, L.reflect, () => {
+    const reflectBtn = g.button(area.x + 272, area.y + 14, 200, L.reflect, () => {
       if (!marked) return;
       marked = false;
       k += 1;

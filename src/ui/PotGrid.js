@@ -1,42 +1,60 @@
-// Interactive 8x8 pot selection. open() resolves with the chosen pot index,
-// or null if the player cancels (only allowed when `cancellable`).
+// The 8x8 wall of pots, as a selection panel. It has two modes:
+//
+// - Plain (the two early guesses): just 64 identical pots. Hercules has no
+//   system yet, so there are no numbers and no coin patterns.
+// - Named (after every coin toss): the X/O row and column headers and the
+//   pot numbers appear, the pot the coins named is highlighted, and only that
+//   pot can be opened. This shows how the six coins pick a row and a column.
+//
+// open() resolves with the chosen pot index, or null if the player cancels
+// (only allowed when `cancellable`).
 
 import { FONTS, GAME_WIDTH, GAME_HEIGHT } from '../config.js';
 import { TEXT } from '../dialogue.js';
-import { frame, text, pixelTitle, meanderBand, makeButton, blocker, show } from './widgets.js';
+import { frame, text, meanderBand, makeButton, blocker, show } from './widgets.js';
+import { pixelTextTexture } from './pixelText.js';
 import { Audio } from '../audio.js';
 import { FACES, patternFor } from '../coins.js';
 
 const CELL = 42;
+const LABEL_SHIFT = 18; // the grid moves right to make room for row headers
 
 export class PotGrid {
   constructor(scene) {
     this.scene = scene;
     this.container = scene.add.container(0, 0).setDepth(600);
     this.resolve = null;
+    this.named = null;
 
     const cx = GAME_WIDTH / 2;
     const cy = GAME_HEIGHT / 2;
     const pw = 520;
     const ph = 500;
-    const gridLeft = cx - (CELL * 8) / 2 + 18;
+    const gridLeft = cx - (CELL * 8) / 2;
     const gridTop = cy - ph / 2 + 84;
 
     this.container.add(blocker(scene));
     this.container.add(frame(scene, cx, cy, pw, ph));
     this.container.add(meanderBand(scene, cx, cy - ph / 2 + 12, pw - 40));
-    this.container.add(pixelTitle(scene, cx, cy - ph / 2 + 42, TEXT.potGrid.title, 24));
+    this.title = scene.add.image(cx, cy - ph / 2 + 42, pixelTextTexture(scene, TEXT.potGrid.title, 24));
+    this.container.add(this.title);
+
+    // The board holds the pots and headers, and shifts sideways so it is
+    // centred with or without the row headers.
+    this.board = scene.add.container(0, 0);
+    this.container.add(this.board);
 
     // Column (last three coins) and row (first three coins) headers.
+    this.headers = [];
     for (let k = 0; k < 8; k++) {
       const b = [4, 2, 1].map((m) => FACES[(k & m) ? 1 : 0]).join('');
-      this.container.add(text(scene, gridLeft + k * CELL + CELL / 2, gridTop - 14, b, {
-        fontFamily: FONTS.body, fontSize: '15px', fontStyle: 'bold', color: '#d9c38a',
-      }).setOrigin(0.5));
-      this.container.add(text(scene, gridLeft - 26, gridTop + k * CELL + CELL / 2, b, {
-        fontFamily: FONTS.body, fontSize: '15px', fontStyle: 'bold', color: '#d9c38a',
-      }).setOrigin(0.5));
+      const style = { fontFamily: FONTS.body, fontSize: '15px', fontStyle: 'bold', color: '#d9c38a' };
+      this.headers.push(
+        text(scene, gridLeft + k * CELL + CELL / 2, gridTop - 14, b, style).setOrigin(0.5),
+        text(scene, gridLeft - 26, gridTop + k * CELL + CELL / 2, b, style).setOrigin(0.5),
+      );
     }
+    this.board.add(this.headers);
 
     this.cells = [];
     for (let i = 0; i < 64; i++) {
@@ -53,7 +71,7 @@ export class PotGrid {
       bg.on('pointerover', () => this.hover(i));
       bg.on('pointerout', () => this.unhover(i));
       bg.on('pointerup', () => this.choose(i));
-      this.container.add([bg, pot, num]);
+      this.board.add([bg, pot, num]);
       this.cells.push({ bg, pot, num });
     }
 
@@ -77,41 +95,56 @@ export class PotGrid {
     return this.container.visible;
   }
 
-  open({ broken, cancellable }) {
+  // named: the pot index the coins chose (labelled mode), or null (plain).
+  open({ broken, cancellable, named = null }) {
     if (this.isOpen()) return Promise.resolve(null);
+    const T = TEXT.potGrid;
     this.broken = broken;
     this.cancellable = cancellable;
+    this.named = named;
+    const labelled = named !== null;
     this.cancelBtn.setVisible(cancellable);
+    this.board.x = labelled ? LABEL_SHIFT : 0;
+    this.headers.forEach((h) => h.setVisible(labelled));
+    this.title.setTexture(pixelTextTexture(this.scene, labelled ? T.namedTitle : T.title, 24));
     for (let i = 0; i < 64; i++) {
       const c = this.cells[i];
       const isBroken = broken.has(i);
-      c.pot.setFrame(isBroken ? 2 : 0).setAlpha(isBroken ? 0.45 : 1);
-      c.bg.setFillStyle(isBroken ? 0x2a211a : 0x4a3b2c).setStrokeStyle(1, 0x6b5236);
-      c.bg.input.cursor = isBroken ? 'default' : 'pointer';
-      c.num.setAlpha(isBroken ? 0.45 : 1);
+      const isNamed = i === named;
+      const dim = isBroken || (labelled && !isNamed);
+      c.pot.setFrame(isBroken ? 2 : 0).setAlpha(dim ? 0.45 : 1);
+      c.bg.setFillStyle(isNamed ? 0x7a5f2a : isBroken ? 0x2a211a : 0x4a3b2c)
+        .setStrokeStyle(isNamed ? 2 : 1, isNamed ? 0xe8b923 : 0x6b5236);
+      c.bg.input.cursor = this.canChoose(i) ? 'pointer' : 'default';
+      c.num.setVisible(labelled).setAlpha(dim ? 0.45 : 1);
     }
-    this.info.setText(TEXT.potGrid.hoverNone);
+    this.info.setText(labelled ? T.named(named, patternFor(named)) : T.plainHint);
     show(this.container, true);
     return new Promise((resolve) => { this.resolve = resolve; });
   }
 
+  canChoose(i) {
+    if (this.named !== null) return i === this.named;
+    return !this.broken.has(i);
+  }
+
   hover(i) {
-    if (!this.isOpen()) return;
+    if (!this.isOpen() || this.named !== null) return;
     if (this.broken.has(i)) {
-      this.info.setText(TEXT.potGrid.broken(i));
+      this.info.setText(TEXT.potGrid.brokenPlain);
       return;
     }
     this.cells[i].bg.setFillStyle(0x7a5f2a).setStrokeStyle(2, 0xe8b923);
-    this.info.setText(TEXT.potGrid.hover(i, patternFor(i)));
+    this.info.setText(TEXT.potGrid.plainHint);
   }
 
   unhover(i) {
-    if (!this.isOpen() || this.broken.has(i)) return;
+    if (!this.isOpen() || this.named !== null || this.broken.has(i)) return;
     this.cells[i].bg.setFillStyle(0x4a3b2c).setStrokeStyle(1, 0x6b5236);
   }
 
   choose(i) {
-    if (!this.isOpen() || this.broken.has(i)) return;
+    if (!this.isOpen() || !this.canChoose(i)) return;
     Audio.play('ui_click');
     this.close(i);
   }

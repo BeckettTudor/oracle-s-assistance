@@ -236,10 +236,11 @@ export class UIScene extends Phaser.Scene {
 
   // The HUD is hidden while the grid is open: the panel is wider than the
   // gap the HUD leaves at the 960x540 layout.
-  pickPot(broken, cancellable) {
+  // named: the pot the coins chose (shows the labelled grid), or null.
+  pickPot(broken, cancellable, named = null) {
     if (this.potGrid.isOpen()) return Promise.resolve(null);
     this.hud.setVisible(false);
-    return this.potGrid.open({ broken, cancellable }).then((result) => {
+    return this.potGrid.open({ broken, cancellable, named }).then((result) => {
       this.hud.setVisible(true);
       return result;
     });

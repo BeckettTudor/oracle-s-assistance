@@ -1,6 +1,8 @@
-// The Oracle's interactive four-stage lesson on Grover's algorithm. Uses its
-// own demo target and local teaching math; it never touches the real target
-// or the quantum adapter.
+// The Oracle's interactive four-stage lesson on Grover's algorithm. She
+// explains each step in the story's terms beside her portrait; below her
+// words, "Quantum explanation" opens the matching topic of the Grover guide,
+// and the hands-on demo sits underneath. Uses its own demo target and local
+// teaching math; it never touches the real target or the quantum adapter.
 
 import { GAME_WIDTH, GAME_HEIGHT } from '../config.js';
 import { TEXT } from '../dialogue.js';
@@ -29,6 +31,10 @@ const NAV_Y = TOP + PH - 28;
 // Stage 4's success plot, right-aligned under the corner of the text column.
 const PLOT_W = 240;
 const PLOT_H = 56;
+// The Oracle's portrait sits left of her words.
+const SPEECH_TOP = TOP + 84;
+const PORTRAIT = 104;
+const TEXT_X = LEFT + 26 + PORTRAIT + 18;
 
 export class Tutorial {
   constructor(scene) {
@@ -46,22 +52,23 @@ export class Tutorial {
       fontSize: '14px', fontStyle: 'bold', color: '#e0a94a',
     });
     this.stageTitle = scene.add.image(LEFT + 24, TOP + 58, pixelTextTexture(scene, ' ', 24)).setOrigin(0, 0.5);
-    this.body = text(scene, LEFT + 26, TOP + 84, '', {
-      fontSize: '17px', color: '#fff6dc', wordWrap: { width: PW - 52 }, lineSpacing: 6,
+    const px = LEFT + 26 + PORTRAIT / 2;
+    const py = SPEECH_TOP + PORTRAIT / 2;
+    this.portraitFrame = frame(scene, px, py, PORTRAIT, PORTRAIT, 'ui_frame');
+    this.portrait = scene.add.image(px, py, 'portrait_oracle');
+    this.body = text(scene, TEXT_X, SPEECH_TOP - 2, '', {
+      fontSize: '16px', color: '#fff6dc', wordWrap: { width: RIGHT - TEXT_X }, lineSpacing: 6,
     });
-    this.note = text(scene, LEFT + 26, TOP + 150, '', {
-      fontSize: '15px', color: '#e0c77e', wordWrap: { width: PW - 52 }, lineSpacing: 4,
-    });
-    this.container.add([this.band, this.header, this.stageTitle, this.body, this.note]);
+    this.quantumBtn = makeButton(scene, TEXT_X + 100, 0, 200, 28, TEXT.tutorial.quantum,
+      () => scene.guide?.open(TEXT.tutorial.stages[this.stage].guide), { fontSize: '15px' });
+    this.container.add([this.band, this.header, this.stageTitle, this.portraitFrame, this.portrait, this.body, this.quantumBtn]);
 
     this.closeBtn = makeButton(scene, LEFT + PW - 86, TOP + 42, 136, 28, TEXT.tutorial.close, () => this.close(), { fontSize: '14px' });
     this.backBtn = makeButton(scene, LEFT + 88, NAV_Y, 120, 34, TEXT.tutorial.back, () => this.go(this.stage - 1));
     this.nextBtn = makeButton(scene, LEFT + PW - 88, NAV_Y, 120, 34, TEXT.tutorial.next, () => this.next());
     this.dots = [];
     for (let i = 0; i < 4; i++) this.dots.push(scene.add.circle(CX - 36 + i * 24, NAV_Y, 6, 0x6b5236));
-    // Opens the Learn More chapter that matches this stage.
-    this.learnBtn = makeButton(scene, 0, TOP + 42, 136, 28, TEXT.tutorial.learnMore, () => scene.guide?.open(this.stage + 1), { fontSize: '14px' });
-    this.container.add([this.closeBtn, this.learnBtn, this.backBtn, this.nextBtn, ...this.dots]);
+    this.container.add([this.closeBtn, this.backBtn, this.nextBtn, ...this.dots]);
 
     this.buildCoins();
     this.buildBars();
@@ -83,7 +90,7 @@ export class Tutorial {
     this.coinLayer = s.add.container(0, 0);
     this.coinBits = [1, 0, 0, 1, 0, 1];
     this.coins = this.coinBits.map((bit, i) => {
-      const coin = s.add.image(LEFT + 112 + i * 74, TOP + 262, 'ui_coin', bit);
+      const coin = s.add.image(LEFT + 112 + i * 74, 40, 'ui_coin', bit);
       coin.setInteractive({ useHandCursor: true });
       coin.on('pointerup', () => {
         this.coinBits[i] ^= 1;
@@ -95,14 +102,14 @@ export class Tutorial {
       this.coinLayer.add([coin, lbl]);
       return coin;
     });
-    this.readout = text(s, LEFT + 88, TOP + 324, '', {
+    this.readout = text(s, LEFT + 88, 100, '', {
       fontSize: '26px', fontStyle: 'bold', color: '#fff6dc',
     });
     this.coinLayer.add(this.readout);
 
     const cell = 18;
     const gx = RIGHT - 60 - cell * 8;
-    const gy = TOP + 214;
+    const gy = 0;
     this.miniCells = [];
     for (let i = 0; i < N; i++) {
       const r = s.add.rectangle(gx + (i % 8) * cell + cell / 2, gy + Math.floor(i / 8) * cell + cell / 2,
@@ -179,13 +186,19 @@ export class Tutorial {
 
   layoutText(after = '') {
     const def = TEXT.tutorial.stages[this.stage];
-    this.body.setText(after ? `${def.body}\n\n${after}` : def.body);
-    this.note.setText(def.note);
-    this.note.setY(this.body.y + this.body.height + 8);
-    if (this.stage === 0) return;
+    this.body.setText(after ? `${def.body}\n${after}` : def.body);
+    // "Quantum explanation" sits just below her words (or her portrait,
+    // whichever ends lower); the demo starts beneath it.
+    const speechBottom = Math.max(SPEECH_TOP + PORTRAIT, this.body.y + this.body.height);
+    this.quantumBtn.setY(Math.round(speechBottom + 8 + 14));
+    const contentTop = Math.round(speechBottom + 8 + 28 + 14);
+    if (this.stage === 0) {
+      this.coinLayer.setY(contentTop);
+      return;
+    }
 
     // Controls row, then the readout, then the chart in whatever room is left.
-    const rowTop = Math.round(this.note.y + this.note.height + 14);
+    const rowTop = contentTop;
     this.actionBtn.setY(rowTop + 17);
     this.resetBtn.setY(rowTop + 17);
     this.plotY = rowTop + 18;
@@ -239,7 +252,6 @@ export class Tutorial {
     this.coinLayer.setVisible(stage === 0);
     this.barsLayer.setVisible(stage > 0);
     this.closeBtn.setVisible(!this.firstTime);
-    this.learnBtn.setX(this.firstTime ? LEFT + PW - 86 : LEFT + PW - 232);
     this.backBtn.setVisible(stage > 0);
     this.nextBtn.setLabel(stage === 3 ? TEXT.tutorial.finish : TEXT.tutorial.next);
     this.resetBtn.setVisible(stage === 3);

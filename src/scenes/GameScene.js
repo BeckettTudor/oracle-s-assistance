@@ -715,6 +715,8 @@ export class GameScene extends Phaser.Scene {
     if (run !== this.runId) return true;
     this.ui.setConsulting(false);
     await this.ui.coinToss.play(outcome);
+    // The labelled wall shows which row and column the coins picked.
+    await this.ui.pickPot(s.brokenPots, false, outcome);
 
     s.mainPots += 1;
     const alreadyBroken = s.brokenPots.has(outcome);

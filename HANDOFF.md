@@ -164,6 +164,20 @@ Working notes for picking the project up in a new Claude Code session. Not part 
   - smoke now leaves the results screen via the guide's Play Again.
   - All pass.
 
+## Follow-up (2026-10-11, late)
+
+- **Pot grid has two modes** (`PotGrid.open({ named })`):
+  - Plain: the two early guesses show a plain 8×8 grid, with no numbers or X/O headers.
+  - Named: after each coin toss, the labelled grid opens with the named pot highlighted and only that pot clickable. Flow: `GameScene` → `ui.pickPot(broken, false, outcome)`.
+  - The coin-toss button now says "Find pot N".
+- **Oracle's lesson:**
+  - Her portrait sits on the left, and her explanation is in-universe (coins, weights on her scroll, marking, mirroring), mapping exactly onto the quantum step.
+  - A "Quantum explanation" button below her words opens the matching guide topic (`stages[i].guide`).
+  - The "Quantum view" notes and the header "Learn more" button are gone.
+  - The altar's button is also labelled "Quantum explanation".
+- **Guide:** the Amplitude Amplification step buttons are wider (160 / 200 px).
+- **smoke.mjs:** clicks pots by object bounds and opens the named pot after each toss (`openNamed`).
+
 ## How to test (dev scripts)
 
 Copies of the puppeteer scripts are in `tools/dev/`: `gallery.mjs`, `smoke.mjs`, `options_test.mjs`, `bot.mjs`.

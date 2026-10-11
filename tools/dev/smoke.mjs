@@ -23,6 +23,19 @@ const clickObj = async (path) => {
   const [x, y] = await ev(new Function(`const r = window.__oa.ui.${path}.getBounds(); return [r.centerX, r.centerY];`));
   await click(x, y);
 };
+const hoverObj = async (path) => {
+  const [x, y] = await ev(new Function(`const r = window.__oa.ui.${path}.getBounds(); return [r.centerX, r.centerY];`));
+  await page.mouse.move(x * 2, y * 2);
+};
+// After a toss, wait for the labelled grid and open the pot the coins named.
+let namedShot = false;
+const openNamed = async () => {
+  for (let i = 0; i < 40 && !(await ev(() => window.__oa.ui.potGrid.isOpen())); i++) await sleep(100);
+  await sleep(300);
+  if (!namedShot) { namedShot = true; await shot('13b_named_grid'); }
+  const named = await ev(() => window.__oa.ui.potGrid.named);
+  await clickObj(`potGrid.cells[${named}].bg`);
+};
 async function clickUntil(cond, max = 200) {
   for (let i = 0; i < max; i++) {
     if (await ev(cond)) return;
@@ -49,8 +62,8 @@ await shot('01_hill_climb');
 for (const [v, next] of [[0, 'ATTEMPT_2'], [1, 'ORACLE_INTRO']]) {
   await enter();
   await clickUntil(() => window.__oa.ui.potGrid.isOpen());
-  if (v === 0) { await page.mouse.move((330 + 21 + 42 * 5) * 2, (104 + 21 + 42 * 4) * 2); await sleep(200); await shot('02_potgrid'); }
-  await click(330 + 21 + 42 * v, 104 + 21);
+  if (v === 0) { await hoverObj('potGrid.cells[37].bg'); await sleep(200); await shot('02_potgrid'); }
+  await clickObj(`potGrid.cells[${v}].bg`);
   await clickUntil(new Function(`return !window.__oa.cutscene && window.__oa.state.phase === '${next}'`));
   seeds.push(await ev(() => window.__oa.climb.seed));
 }
@@ -100,7 +113,7 @@ await toss();
 await sleep(1500); await shot('12_toss');
 await clickUntil(() => window.__oa.ui.coinToss.isOpen() && window.__oa.ui.coinToss.openBtn.visible);
 await shot('13_toss_result');
-await click(480, 270 + 150 - 40);
+await click(480, 270 + 150 - 40); await openNamed();
 await clickUntil(() => !window.__oa.cutscene && window.__oa.player.y > 1500);
 log.push('after wrong toss: ' + JSON.stringify(await ev(() => ({ g: window.__oa.state.groverTotal, run: window.__oa.state.groverRun, pots: window.__oa.state.mainPots, explained: window.__oa.state.collapseExplained }))));
 await ev(() => { delete window.__oa.withRetry; });
@@ -120,7 +133,7 @@ for (;;) {
   await clickUntil(() => window.__oa.ui.oraclePanel.isOpen() && window.__oa.ui.oraclePanel.askBtn.visible);
   await toss();
   await clickUntil(() => window.__oa.ui.coinToss.isOpen() && window.__oa.ui.coinToss.openBtn.visible);
-  await click(480, 270 + 150 - 40);
+  await click(480, 270 + 150 - 40); await openNamed();
   tries++;
   await sleep(2500);
   if (await ev(() => window.__oa.state.phase !== 'MAIN_LOOP')) break;

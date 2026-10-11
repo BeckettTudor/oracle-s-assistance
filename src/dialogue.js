@@ -179,9 +179,10 @@ export const TEXT = {
 
   potGrid: {
     title: 'Choose a pot to open',
-    hover: (i, pattern) => `Pot ${i}  ·  the coins that name it: ${pattern}`,
-    hoverNone: 'Hover over a pot to see its number and the coin pattern that names it',
-    broken: (i) => `Pot ${i} is already broken`,
+    namedTitle: 'The coins name a pot',
+    plainHint: 'Any of the sixty-four pots could hold the bolt. Pick one to open.',
+    brokenPlain: 'This pot is already broken.',
+    named: (i, pattern) => `${pattern}: row ${pattern.slice(0, 3)}, column ${pattern.slice(3)}. Open pot ${i}.`,
     cancel: 'Cancel (Esc)',
   },
 
@@ -205,51 +206,54 @@ export const TEXT = {
     title: 'Fate Decides',
     spinning: 'The coins spin...',
     result: (pattern, pot) => `${pattern}  →  the coins name pot ${pot}`,
-    open: (pot) => `Open pot ${pot}`,
+    open: (pot) => `Find pot ${pot}`,
   },
 
-  // Quantum explanations are taken from the project write-up on Qollab
-  // (docs/qollab-project-page.txt), so the game and the write-up agree.
+  // The Oracle's lesson is told in the story's own terms: coins, weights on
+  // her scroll, marking and mirroring. Each stage maps exactly onto the
+  // quantum step, and its "Quantum explanation" button opens the matching
+  // topic of the Grover guide (`guide` is the topic index), whose text comes
+  // from the project write-up on Qollab (docs/qollab-project-page.txt).
   tutorial: {
     header: 'The Oracle\'s Lesson',
     next: 'Next',
     back: 'Back',
     finish: 'Finish',
     close: 'Close (Esc)',
-    learnMore: 'Learn more',
+    quantum: 'Quantum explanation',
     stages: [
       {
         title: '1 · Six Coins, Sixty-Four Pots',
-        body: 'Each time Hercules tosses his six coins, he gets a unique series of six X\'s and O\'s that correspond to exactly one of the pots. The first three coins pick the row and the last three pick the column. Click the coins.',
-        note: 'Quantum view: each outcome (pot) corresponds to a six-bit binary string. Six qubits have 64 computational basis states because 2⁶ = 64.',
+        body: 'Your six coins each land chi or omicron. Together they spell one of sixty-four patterns, and each pattern names exactly one pot: the first three coins choose its row, the last three its column. Turn the coins and see which pot they name.',
+        guide: 1,
       },
       {
         title: '2 · Even Odds',
-        body: 'Each bar is one outcome, and its height is that outcome\'s probability amplitude. For the algorithm, the six qubits begin in the state |000000>, so one outcome is certain. A Hadamard gate is applied to each qubit, producing an equal superposition of all 64 basis states.',
-        after: 'Initially, every pot has the same measurement probability: 1/64, or 1.5625%. This is represented in the game by the initially fair state of the six coins.',
-        button: 'Hadamard to all coins',
-        note: 'Quantum view: each coin having a 50/50 chance of landing either X or O makes the distribution of all possible outcomes completely uniform, as does the all-qubit Hadamard.',
+        body: 'Before a toss, the coins have not yet chosen how to fall. My scroll shows every pattern they could make, each with a weight, and the square of a weight is the chance of that fall. Resting as they are, all on omicron, only one pattern can come. Set all six spinning.',
+        after: 'Now every pattern carries the same weight, one eighth, so each has a one in sixty-four chance. A toss now would be a blind guess.',
+        button: 'Spin all six coins',
+        guide: 2,
       },
       {
         title: '3 · The Oracle\'s Mark',
-        body: 'The Grover oracle recognizes the marked state and changes its phase by multiplying its amplitude by −1.',
-        after: 'This doesn\'t change the probability yet, only the probability amplitude, but this difference will be exploited to change the amplitudes markedly.',
+        body: 'I know which pattern names the bolt\'s pot, but a prophecy cannot simply be spoken. What I can do is turn that pattern\'s weight upside down.',
+        after: 'Its bar now hangs below the line, yet its chance is unchanged: a weight turned over and squared is the same as before. The pot is marked, but nothing is revealed.',
         button: 'Mark the bolt\'s pot',
-        note: 'Quantum view: O|x> = (−1)^f(x) |x>. Here, f(x) = 1 for the marked state and 0 otherwise.',
+        guide: 3,
       },
       {
         title: '4 · Bending Fate',
-        body: 'After the oracle marks the target, the diffusion operator reflects the amplitudes about their mean (the dashed line). This amplifies the probability amplitude of the marked state while decreasing those of the other states.',
-        after: (k, p) => `After ${plural(k, 'blessing')}, the probability of the bolt's pot is ${(p * 100).toFixed(1)}%.` + (k > 6 ? ' Any more than six will begin to lower the probability.' : k === 6 ? ' Six iterations provide the optimal integer iteration count for this search.' : ''),
+        body: 'Then I mirror every weight across their average, the dashed line. The marked weight hung far below the average, so it lands far above it. A mark, then a mirroring: that is one blessing.',
+        after: (k, p) => `After ${plural(k, 'blessing')}, the coins name the bolt's pot ${(p * 100).toFixed(1)}% of the time.` + (k > 6 ? ' Too many blessings swing past the peak, and the chance falls again.' : k === 6 ? ' Six is the peak. Toss now.' : ''),
         button: 'One blessing',
         reset: 'Reset',
-        note: 'Quantum view: together, the oracle and diffusion operator constitute one Grover iteration. Each Grover iteration is represented as taking one blessing from the Oracle of Delphi.',
+        guide: 4,
       },
     ],
     readout: (pattern, dec) => `${pattern}  →  Pot ${dec}`,
-    probLabel: 'Probability of the bolt\'s pot, by blessing',
-    probUniform: (a0, a1) => `000000: amplitude ${a0.toFixed(3)}  ·  every other outcome: amplitude ${a1.toFixed(3)}, probability ${(a1 ** 2 * 100).toFixed(2)}%`,
-    probMarked: (a, p) => `Bolt's pot (gold): amplitude ${a.toFixed(3)}, probability ${(p * 100).toFixed(1)}%`,
+    probLabel: 'Chance of the bolt\'s pot, by blessing',
+    probUniform: (a0, a1) => `Weight of ΟΟΟΟΟΟ: ${a0.toFixed(3)}  ·  every other pattern: ${a1.toFixed(3)}, a ${(a1 ** 2 * 100).toFixed(2)}% chance`,
+    probMarked: (a, p) => `The bolt's pot (gold): weight ${a.toFixed(3)}, a ${(p * 100).toFixed(1)}% chance`,
   },
 
   // The Grover guide: an interactive explainer reached from the lesson, the
