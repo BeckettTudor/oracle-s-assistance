@@ -1,0 +1,434 @@
+Qollab
+Projects
+Explore
+Learn
+Programs
+Forum
+About
++ New Project
+Sign in
+
+J
+jaknud9448
+/
+Oracle's Assistance
+/
+Version
+v1.3
+Fork
+Like
+Share
+Run on Qollab
+Project Card
+Code
+Discussions
+Oracle's Assistance
+Learning Quantum Search Advantage Through an Interactive Greek Myth
+The Gameplay Overview
+How Grover's Algorithm Works
+The Search Space
+Initializing Superposition
+The Grover Oracle
+Amplitude Amplification with the Diffusion Operator
+Finding the Optimal Iteration Count
+Measurement
+Our Quantum Implementation
+Ideal Simulation Versus Quantum-Backend Execution
+Running and Reproducing the Project
+Playing the Browser Game
+Running the Qiskit Implementation on Qollab
+What Makes This an Educational Contribution?
+Limitations and Future Development
+References, Source, and Credits
+Oracle's Assistance
+Oracle's Assistance
+Learning Quantum Search Advantage Through an Interactive Greek Myth
+
+Oracle's Assistance is an educational, browser-based platformer that teaches the intuition and concepts behind Grover's Algorithm via an interactive Ancient Greek adventure. Players take the role of Hercules, who has been given a task to find Zeus's lightning both amongst 64 identical pots.
+
+The seemingly strenuous task becomes easier when Hercules decides to use specially weighted coins (qubits) while consulting the Oracle of Delphi (the oracle/diffusion operators), to find the bolt within one of the 64 pots
+
+The game lets players experiment with the algorithm interactively: choosing how many iterations to perform, observing the inversion of the probability amplitudes and the increasing of the correct amplitude, and discovering why and how the algorithm can overshoot.
+
+Theme: Quantum Unlocked
+
+Technologies: Qiskit, Python, JavaScript, Phaser 3, Vercel
+
+Links: Game Link · Demo Video · External Github Repo
+
+The Gameplay Overview
+
+Hermes, the trickster of Olympus, has stolen Zeus's lightning bolt and hidden it inside one of 64 pots in the Temple of Apollo. Zeus gives Hercules the task of recovering the bolt as quickly as possible
+
+There is a large climb required to get up to the temple. At first, Hercules makes the climb to begin checking the pots one by one, but each opportunity to check a pot requires an offering to the Oracle, and Hercules can only carry one offering up to the temple at a time. This strongly emphasizes the need for better search efficiency.
+
+Platforms Up to the Temple
+
+Hercules has another idea; he will use six magical golden coins to represent each of the 64 pots as individual binary strings, because there are 64 unique sequences of heads and tails. Instead of inspecting each location individually, he can have the Oracle give him a blessing to change the coins weightings, increasing the likelihood of coin toss pointing him to the correct pot.
+
+Hercules' Coins
+
+Coin Probability Amplitudes on the Oracle's Scroll
+
+However, each time Hercules receives a blessing, he must also return back down to obtain another offering, and if he takes too many blessings, his chances of success on the coin toss will actually begin to come back down, and so he must use the Oracle's help to find the optimal number of blessings.
+
+Additionally, whenever he throws the coins, the blessings are expended and they return back to their fair, 50/50 status. Therefore, throwing (measuring) only after the optimal number of blessings is absolutely necessary to minimize the number of trips.
+
+How Grover's Algorithm Works
+
+Grover's algorithm (also called quantum search) was introduced by Lov Grover in 1996, and is a quantum algorithm for searching an unstructured collection of possibilities.
+
+A classical linear search generally requires a number of queries proportional to the size of the search space, written as 
+𝑂
+(
+𝑁
+)
+O(N). The average is usually 
+𝑛
++
+1
+2
+2
+n+1
+	​
+
+, and the maximum in the worst case is 
+𝑛
+−
+1
+n−1. Grover's algorithm can find a marked item with high probability using 
+𝑂
+(
+𝑁
+)
+O(
+N
+	​
+
+) quantum oracle queries.
+
+For this game, 
+𝑁
+=
+64
+N=64 (64 pots), requiring six qubits (six coins).
+
+The Search Space
+
+Each outcome (pot) corresponds to a six-bit binary string. The 64 item list containing each of these unique bit strings is the computational basis.
+
+Six qubits have 64 computational basis states because 
+2
+6
+=
+64
+2
+6
+=64.
+
+Each time Hercules tosses his six coins, he gets a unique series of six X's and O's that correspond to exactly one of the pots.
+
+Initializing Superposition
+
+As opposed to classical bits, qubits can produce a state with a superposition between all these possible outcome computational basis states.
+
+For the algorithm, the six qubits begin in the state 
+∣
+000000
+⟩
+∣000000⟩.
+
+A Hadamard gate is applied to each qubit, producing an equal superposition of all 64 basis states:
+
+∣
+𝜓
+⟩
+=
+1
+8
+∑
+𝑥
+=
+0
+𝑛
+−
+1
+∣
+𝑥
+⟩
+∣ψ⟩=
+8
+1
+	​
+
+∑
+x=0
+n−1
+	​
+
+∣x⟩
+
+Initially, every pot has the same measurement probability: 
+1
+64
+64
+1
+	​
+
+, or 
+1.5625
+1.5625.
+
+This is represented in the game by the initially fair state of the six coins. Each coin having a 50/50 chance of landing either X or O makes the distribution of all possible outcomes completely uniform, as does the all-qubit Hadamard.
+
+The Grover Oracle
+
+The Grover oracle recognizes the marked state and changes its phase by multiplying its amplitude by 
+−
+1
+−1. This doesn't change the probability yet, only the probability amplitude, but this difference will be exploited to change the amplitudes markedly.
+
+𝑂
+∣
+𝑥
+⟩
+=
+(
+−
+1
+)
+𝑓
+(
+𝑥
+)
+∣
+𝑥
+⟩
+O∣x⟩=(−1)
+f(x)
+∣x⟩
+
+Here, 
+𝑓
+(
+𝑥
+)
+=
+1
+f(x)=1 for the marked state and 0 otherwise.
+
+Amplitude Amplification with the Diffusion Operator
+
+After the oracle marks the target, the diffusion operator reflects the amplitudes about their mean. This amplifies the probability amplitude of the marked state while decreasing those of the other states, which markedly increases the actual probability of the marked state.
+
+𝐷
+=
+𝐻
+⊗
+𝑛
+(
+2
+∣
+0
+𝑛
+⟩
+⟨
+0
+𝑛
+∣
+−
+𝐼
+)
+𝐻
+⊗
+𝑛
+D=H
+⊗n
+(2∣0
+n
+⟩⟨0
+n
+∣−I)H
+⊗n
+
+This applies another Hadamard to the uniform superposition (with the inverted phase for the marked state) to collapse the state back down (although it is still in superposition), capitalizing on interference to encode the mean of all amplitudes into the amplitude of the all 0 state. Phases of all other amplitudes are then flipped except the all zero state, before another all-qubit Hadamard is applied. This expands back to the size of the original superposition, with amplitudes now flipped over the mean.
+
+Together, the oracle and diffusion operator constitute one Grover iteration. As they iterate up until the optimal level, the probability of measuring the correct state continues increasing up until near 
+100
+100.
+
+Each Grover iteration is represented as taking one blessing from the Oracle of Delphi. She "inverts the weighting of the coins" and then performs her alterations to invert the amplitudes, as is shown by a visual in-game.
+
+Finding the Optimal Iteration Count
+
+For one marked state among 64 possibilities, the ideal probability of success after k Grover iterations is:
+
+𝑃
+(
+𝑘
+)
+=
+sin
+⁡
+2
+(
+(
+2
+𝑘
++
+1
+)
+arcsin
+⁡
+1
+8
+)
+P(k)=sin
+2
+((2k+1)arcsin
+8
+1
+	​
+
+)
+
+In the context of the game, with a search over his produces the following theoretical results:
+
+Grover iterations	Success probability
+0	1.56%
+1	13.48%
+3	59.14%
+5	96.35%
+6	99.66%
+7	90.74%
+10	23.81%
+
+Six iterations provide the optimal integer iteration count for this particular search, while any more will begin to lower the probability, which is reflected in game.
+
+The player will receive advice as to the optimal stopping point, but will be given the option to continue, and will be able to observe the lowering of the probability.
+
+Measurement
+
+After the desired number of iterations, the state is measured in the computational basis. The state collapses according to the probability amplitudes of each basis state, and the correct outcome is achieved with high probability. In-game, Hercules will toss his coins, expend all the blessings, and smash the pot the coins tell him to smash.
+
+Our Quantum Implementation
+
+The project includes a corresponding six-qubit Qiskit implementation of Grover's algorithm hosted on Qollab, alongside the independently runnable browser-based game. The game utilizes its own backend simulator with randomly generated outcomes according to the probabilities.
+
+The quantum implementation consists of:
+
+Target selection: A six-bit state is selected as the search target and remains unchanged for the duration of a single experiment.
+State preparation: Hadamard gates prepare a uniform superposition across all 64 possible states.
+Phase oracle: A marked-state phase operation distinguishes the target from the unmarked states.
+Diffusion operator: A reflection about the uniform superposition amplifies the marked state's amplitude.
+Measurement: The final circuit is measured to estimate the probability distribution across all 64 possible outcomes.
+Ideal Simulation Versus Quantum-Backend Execution
+
+The browser game uses its own ideal simulation of the six-qubit search to provide immediate feedback and visualizations during gameplay, while the Qollab implementation executes Qiskit circuits using a simulator selected by the user. This allows the quantum search to be examined and experimented with independently of the game's presentation.
+
+The ideal probability predictions do not factor in noise, just computer-random based variations. The very slight differences can potentially be observed between the game and the pure algorithm on real quantum hardware, especially for larger, deeper, multi-qubit circuits.
+
+Additionally, the project compares oracle queries with traditional search function queries to gauge the difference in time complexity. This comparison is not perfect, with each type of query consuming different amounts of computing time and power, and other computing time from the individual circuits needing to be accounted for. However, the comparison serves as a relatively accurate estimate, especially as search spaces get larger.
+
+Running and Reproducing the Project
+Playing the Browser Game
+Open Game Link.
+Click Play to begin Hercules's adventure.
+Follow the opening tutorial and consult the Oracle of Delphi.
+Experiment with Grover iterations and observe their effect on the probability of success.
+Complete the search and review the final results.
+
+The game is intended for desktop browsers and uses keyboard controls for movement and interaction.
+
+Running the Qiskit Implementation on Qollab
+Open the Code tab of this Qollab project.
+Select Run Project.
+Choose any simulator or actual hardware.
+Configure the marked state, number of Grover iterations, and number of measurement shots using the available run parameters.
+Execute the circuit and examine the resulting measurement counts and probabilities.
+Repeat the experiment with different iteration counts and compare the outcomes with the theoretical probability curve.
+
+For the clearest comparison, keep the marked state and shot count constant across runs while varying the number of Grover iterations.
+
+The experiment is designed to be reproducible for any marked state from 000000 through 111111, and it is suggested to experiment with any series of iterations, from:
+
+None: Uniform distribution of outcomes
+Limited: Higher probability of successful state selection (although not highest)
+Optimal: Initial maximum of the successful state selection probability
+Overshot: Reduced probability of successful state selection (can be reduced anywhere from minimally, to back to uniform, to below uniform)
+What Makes This an Educational Contribution?
+
+Oracle's Assistance aims to connect abstract quantum concepts with decisions and actions that a player can understand intuitively and interact with actively. Its educational contribution is built around three ideas:
+
+Learning by consequence. The impact of the iterations is well explained, and the optimal number is given, but not enforced. This means players can experiment with the number of iterations, and observe the consequences. They can also play many times and observe the potential for an outcome to be incorrect, despite a higher likelihood than not for it to be the correct one.
+
+Making interference and phase shifting properties tangible. The game doesn't present quantum computing as some nebulous ability to test every answer simultaneously. Instead, the game focuses on how the phase changes and interference create a marked shift in probabilities, and how this shift increases with each iteration.
+
+Teaching both the limitations and the advantages. Players interact with the nature of probabilistic measurement, the tradeoff between additional queries and success probability, and the surprising fact that the iterations can overshoot and success chance can be lowered.
+
+The intended audience is those curious about quantum, who are comfortable with basic probability and binary numbers, but have little or no previous quantum-computing experience.
+
+Of the algorithms with a proven quantum advantage, Grover's is, to us, the simplest to begin teaching with. Those who are completely new to the field will get a good introduction to the potential of quantum advantage, and a good intuition of how this technology can potentially provide advantages over classical methods.
+
+Limitations and Future Development
+
+The current six-qubit, 64-outcome search space problem is deliberately small enough to visualize and simulate efficiently. This makes it useful for education, but not as a demonstration of practical computational advantage.
+
+Potential extensions include introducing multiple marked states, adding in an element of quantum noise to deal with, adding different search-space sizes, and potentially allowing players to construct their own oracles.
+
+References, Source, and Credits
+Lov K. Grover, A Fast Quantum Mechanical Algorithm for Database Search (1996): https://arxiv.org/abs/quant-ph/9605043
+Microsoft Ignite, Theory of Grover's Search Algorithm: https://learn.microsoft.com/en-us/azure/quantum/concepts-grovers
+
+Source code: Github
+
+Contributors: Beckett Tudor, Jack Knudsen
+
+Development disclosure: All code and documentation was completed on the weekend of October 9-11. All game assets were AI generated with use of ChatGPT over the course of the weekend of October 9-11.
+
+License: MIT
+
+Fork
+Like
+Run on Qollab
+Contributors
+J
+jaknud9448
+Owner
+B
+BeckettTudorNYU
+Tags
+Search similar
+Python + Qiskit
+About
+
+An interactive Greek Mythology game to teach Grover's Algorithm.
+
+Project Versions
+v1.3
+Default
+Oct 11, 2026
+© fluxDev 2026
+Explore
+·
+Learn
+·
+Programs
+·
+Contributors
+·
+Forum
+·
+Feedback
+Privacy Policy
+·
+Terms
+·
+Community Guidelines
+
+Analytics preferences
+
+We use a few cookies and analytics tools to understand how Qollab is used and make it better. Nothing is collected until you accept. More in our Privacy Policy.
+
+Decline
+Accept
