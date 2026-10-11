@@ -4,7 +4,7 @@ All artwork is drawn in code (`src/art/`) at one shared pixel scale: every art p
 
 The images you supplied (sprite sheets, texture sheets, backgrounds) remain in `assets/` as **design reference only**; the game doesn't load them.
 
-**After adding or removing files in `assets/`, run `python tools/list_assets.py`.** It rewrites `assets/files.json`, the list of files that exist. Hosts without folder listings, such as GitHub Pages, use that list to request only real files. Locally, `serve.py`'s folder listings are used instead.
+**After adding or removing files in `assets/`, run `python tools/list_assets.py` before pushing.** It rewrites `assets/files.json`, the list of files that exist, which the game reads so it only requests real files. GitHub Pages serves that file as is. Locally, `serve.py` builds the same list fresh on every load, so you don't need to re-run it while working.
 
 ## Portraits
 
