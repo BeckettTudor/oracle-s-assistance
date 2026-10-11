@@ -1,9 +1,26 @@
 // Quantum adapter: the ONLY place the game talks to "quantum" functionality.
 //
-// This MVP build uses a classical simulation. To use real quantum hardware or
-// Qollab's software, replace the bodies of these functions and keep the same
-// signatures. Every function is async so network/hardware latency is fine;
-// the game shows "The Oracle is consulting..." while a call is pending.
+// WHAT THIS IS NOT: this file does not run Qiskit, does not call Qollab or
+// any quantum computer, and is not a real quantum simulation. There are no
+// qubits, gates or circuits here.
+//
+// WHAT IT IS: a classical stand-in written in plain JavaScript. It keeps 64
+// ordinary numbers (one "amplitude" per pot) and changes them with the
+// closed-form results of each Grover step (see sim/statevector.js):
+//   - start / reset: every amplitude set to 1/8, the result a Hadamard on all
+//     six qubits would give, written down directly rather than computed by gates
+//   - oracle: the target's number is multiplied by -1 (this code simply knows
+//     the target; a real oracle would be a circuit that recognises it)
+//   - diffusion: every number a becomes 2m - a, where m is their average
+//   - measurement: one pot is drawn at random, weighted by the squares
+// For one marked item and no noise, these formulas give the same numbers as
+// the ideal mathematics of Grover's algorithm. That is all this models.
+// The project's real Qiskit implementation lives separately on Qollab and
+// is not used by the game.
+//
+// To connect a real backend, replace the bodies of these functions and keep
+// the same signatures. Every function is async so network/hardware latency is
+// fine; the game shows "The Oracle is consulting..." while a call is pending.
 //
 //   async generateTarget(excludedIndices: number[]) -> number   // 0-63
 //   async runGroverIteration() -> {
@@ -27,7 +44,8 @@ import { uniform, applyOracle, applyDiffusion, probabilities, argmax } from './s
 
 const N = 64;
 
-// Simulated latency so the "consulting" state is exercised during testing.
+// An artificial delay, so the "consulting" state behaves as it would with a
+// real backend. Nothing is being computed during it.
 const SIMULATED_LATENCY_MS = { min: 350, max: 700 };
 
 const sim = {
@@ -42,8 +60,8 @@ function delay() {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-// Uniform random float in [0, 1) from the platform's secure generator
-// (stand-in for a quantum random number generator).
+// Uniform random float in [0, 1) from the browser's ordinary secure random
+// generator. It stands in for a quantum random number generator; it is not one.
 function random01() {
   const buf = new Uint32Array(1);
   crypto.getRandomValues(buf);

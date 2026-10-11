@@ -2,6 +2,8 @@
 
 A 2D platformer that teaches Grover's algorithm. It was built for Qollab's "Quantum Unlocked" hackathon.
 
+> **The game does not run Qiskit, does not connect to Qollab or any quantum computer, and is not a real quantum simulation.** Its "quantum" side is a small classical stand-in written in plain JavaScript, which reproduces the ideal numbers of Grover's algorithm for a single marked item. See [How the game models the quantum side](#how-the-game-models-the-quantum-side). The project's Qiskit implementation is separate and lives on Qollab.
+
 ## Running it
 
 The game needs a local web server, because ES modules don't load from `file://`. From this folder:
@@ -27,8 +29,8 @@ src/level.js                 Temple geometry + random climb generator
 src/gameState.js             Run state + strict phase state machine
 src/dialogue.js              ALL dialogue and on-screen text
 src/coins.js                 Χ/Ο coin patterns <-> pot numbers
-src/quantumAdapter.js        The only quantum interface (classical sim for now)
-src/sim/statevector.js       State-vector math (adapter sim + tutorial only)
+src/quantumAdapter.js        The only "quantum" interface: a classical stand-in, not Qiskit
+src/sim/statevector.js       64 plain numbers and closed-form Grover steps (not a quantum simulator)
 src/assetManifest.js         Every asset key, path, size, animation, audio cue
 src/assetDiscovery.js        Finds which asset files exist (avoids 404 noise)
 src/placeholders.js          Generates labeled placeholders for missing assets
@@ -66,7 +68,7 @@ Restart Run and Main Menu ask for confirmation first. A restart is safe even whi
 
 ## The Grover guide
 
-An interactive explainer of Grover's algorithm (`src/ui/GroverGuide.js`). It has nine topics:
+An interactive explainer of Grover's algorithm (`src/ui/GroverGuide.js`). It has eight topics:
 
 1. The search problem
 2. The search space
@@ -76,23 +78,22 @@ An interactive explainer of Grover's algorithm (`src/ui/GroverGuide.js`). It has
 6. The optimal iteration count
 7. Measurement
 8. Quantum advantage
-9. Our quantum implementation
 
 Each topic has:
 
 - **Explanation:** text taken from the project write-up on Qollab.
-- **Hands-on demo:** for example, searching pots one by one, flipping coins, applying the oracle and diffusion, stepping through iterations, measuring 100 times, or comparing classical and Grover query counts for any number of qubits.
+- **Hands-on demo:** run on the same classical stand-in as the game (see below), for example searching pots one by one, flipping coins, applying the oracle and diffusion, stepping through iterations, measuring 100 times, or comparing classical and Grover query counts for any number of qubits.
 - **More detail:** an extra page with the maths, on some topics.
 - **"In the game" box:** connects the idea to what Hercules does.
 
 You can open it from:
 
-- **The Oracle's lesson:** each page has a "Learn more" button that opens the matching topic.
+- **The Oracle's lesson:** each page has a "Quantum explanation" button that opens the matching topic.
 - **The Oracle's altar:** opens the optimal-iterations topic.
 - **Options:** at any point in a run.
 - **The results screen:** its only button. The guide there also holds Play Again and Main Menu.
 
-**Source of the explanations.** All quantum explanations in the game come from the Qollab project page. This covers the lesson's text and "Quantum view" notes, the altar note and the guide. A copy of the page text is in `docs/qollab-project-page.txt`. The text itself lives in `TEXT.tutorial`, `TEXT.oracle` and `TEXT.guide` in `src/dialogue.js`.
+**Source of the explanations.** The quantum explanations in the guide and the altar's note come from the Qollab project page; a copy of the page text is in `docs/qollab-project-page.txt`. The Oracle's lesson is told in the story's own terms (coins, weights, marking, mirroring), with each step mapped onto the quantum one. All of this text lives in `TEXT.tutorial`, `TEXT.oracle` and `TEXT.guide` in `src/dialogue.js`.
 
 ## Sound
 
@@ -127,22 +128,45 @@ All sound is synthesised in the browser by `src/synth.js`, the same way the art 
 
 All the limits (rise, gap, widths, speeds, how often each piece appears) are in the `CLIMB` table in `src/level.js`. A course has 13–20 pieces plus two checkpoints.
 
-## Replacing the classical simulation
+## How the game models the quantum side
 
-All quantum behavior goes through four async functions in `src/quantumAdapter.js`:
+**This is not Qiskit, and it is not a real quantum simulation.** No qubits, gates or circuits exist anywhere in the game, and nothing is sent to Qollab or to any quantum computer or quantum simulator. Everything runs as ordinary JavaScript in the browser.
+
+What the game does instead is keep a list of 64 ordinary numbers, one per pot (`src/sim/statevector.js`), and change them with the known end result of each step of Grover's algorithm:
+
+| Step | What a quantum computer would do | What this game does instead |
+|---|---|---|
+| Start | Apply a Hadamard gate to each of six qubits | Sets all 64 numbers to 1/8 directly |
+| Oracle (the Oracle's "mark") | Run a circuit that recognises the answer and flips its phase | The code already knows the target, and multiplies that one number by −1 |
+| Diffusion (the "mirroring") | Hadamards, a phase flip on \|000000⟩, Hadamards again | Replaces every number *a* with 2*m* − *a*, where *m* is their average |
+| Measurement (the coin toss) | Measure the qubits; the state collapses | Picks one pot at random, weighted by the squared numbers, then resets to 1/8 |
+| Target choice | Quantum random number generator (planned in the spec) | The browser's ordinary secure random generator (`crypto.getRandomValues`) |
+
+For one marked item with no noise, these formulas give exactly the same probabilities as the ideal mathematics of Grover's algorithm, for example 13.5% after one iteration and 99.7% after six. That is the whole extent of the model. It leaves out:
+
+- **Real quantum mechanics:** qubits, gates, circuits, complex amplitudes, entanglement and noise. Grover's state happens to stay simple enough that a few lines of arithmetic can stand in for all of this, which would not be true for quantum programs in general.
+- **Actual computation behind the "consulting" pause:** the 350–700 ms delay is artificial, there so the "The Oracle is consulting…" state behaves as it would with a real backend.
+- **Real hardware behaviour:** the bar graphs show the exact numbers. Real hardware never reveals amplitudes; it only returns measured results.
+
+The project's Qiskit implementation of Grover's algorithm is separate. It lives on Qollab (the project's Code tab), and the game never calls it.
+
+### Connecting a real backend
+
+All "quantum" behaviour goes through four async functions in `src/quantumAdapter.js`:
 
 ```js
 async generateTarget(excludedIndices)  // -> 0..63, called exactly once per run
 async runGroverIteration()             // -> { iteration, probabilities[64], mostLikely,
                                        //      amplitudes?[64], oracleAmplitudes?[64] }
-async measure()                        // -> 0..63, sampled from the current state (the coin toss)
-async resetGrover()                    // back to uniform superposition
+async measure()                        // -> 0..63, drawn from the current probabilities (the coin toss)
+async resetGrover()                    // back to the even starting state
 ```
 
-To use the real quantum implementation, replace the bodies of these functions and keep their signatures. The two amplitude arrays only drive the bar-graph animation. If a backend can't provide them, the game draws bars from the square roots of the probabilities and skips the "mark" step. After every `measure()` that doesn't find the bolt, the game calls `resetGrover()`.
+To connect a real quantum implementation, replace the bodies of these functions and keep their signatures.
 
-The game shows "The Oracle is consulting…" while a call is pending. If a call fails, the game shows a message and retries.
- 
-The simulated latency (350–700 ms) is at the top of the adapter. Set it to 0 if you don't want it.
+- **The two amplitude arrays** only drive the bar-graph animation. If a backend can't provide them, the game draws bars from the square roots of the probabilities and skips the "mark" step.
+- **After a miss:** after every `measure()` that doesn't find the bolt, the game calls `resetGrover()`.
+- **While a call is pending:** the game shows "The Oracle is consulting…". If a call fails, it shows a message and retries.
+- **The artificial delay** (350–700 ms) is at the top of the adapter. Set it to 0 if you don't want it.
 
 

@@ -1,6 +1,10 @@
-// Tiny classical state-vector math for Grover search over real amplitudes.
-// Used by the classical-simulation quantum adapter and by the teaching
-// tutorial (which runs on its own demo target). Gameplay code never uses it.
+// Tiny classical math for Grover search: a list of 64 real numbers and the
+// closed-form effect of each step on them. This is not a quantum simulator
+// (no qubits, gates, complex amplitudes or noise) and not Qiskit; it only
+// reproduces the ideal numbers for a single marked item.
+// Used by the classical quantum adapter, and by the teaching screens (the
+// lesson, the Grover guide and the results chart), which use their own demo
+// target and never touch the real one.
 
 export function basisState(n, index) {
   const a = new Float64Array(n);

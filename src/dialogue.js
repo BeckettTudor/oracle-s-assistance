@@ -356,17 +356,6 @@ export const TEXT = {
         ],
         game: 'The six-qubit, 64-outcome search space in this game is deliberately small enough to visualize and simulate efficiently. This makes it useful for education, but not as a demonstration of practical computational advantage.',
       },
-      {
-        title: 'Our Quantum Implementation',
-        tab: 'Our Implementation',
-        demo: null,
-        text: [
-          'The project includes a corresponding six-qubit Qiskit implementation of Grover\'s algorithm hosted on Qollab, alongside the independently runnable browser-based game. The quantum implementation consists of:',
-          '•  Target selection: a six-bit state is selected as the search target and remains unchanged for the duration of a single experiment.\n•  State preparation: Hadamard gates prepare a uniform superposition across all 64 possible states.\n•  Phase oracle: a marked-state phase operation distinguishes the target from the unmarked states.\n•  Diffusion operator: a reflection about the uniform superposition amplifies the marked state\'s amplitude.\n•  Measurement: the final circuit is measured to estimate the probability distribution across all 64 possible outcomes.',
-          'The browser game uses its own ideal simulation of the six-qubit search to provide immediate feedback and visualizations during gameplay. The ideal probability predictions do not factor in noise, so slight differences can be observed between the game and the algorithm on real quantum hardware, especially for larger, deeper circuits.',
-        ],
-        game: 'To run the Qiskit version, open the Code tab of this project on Qollab (qollab.xyz) and select Run Project. Vary the number of Grover iterations and compare the outcomes with the theoretical probability curve.',
-      },
     ],
     // Labels for the hands-on demos.
     classical: {

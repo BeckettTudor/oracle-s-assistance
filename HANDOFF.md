@@ -140,7 +140,7 @@ Working notes for picking the project up in a new Claude Code session. Not part 
   - Replaced with its wording: the lesson bodies and notes, the altar text, and all guide topics.
   - Small fixes only: typos, % signs, and "N" in the sum limit. The old 8-page `Codex.js` was deleted.
 - **Grover guide** (`src/ui/GroverGuide.js`, `TEXT.guide`):
-  - Nine topics, each with a demo, an optional "More detail" page, and an "In the game" box.
+  - Nine topics at first; "Our Quantum Implementation" (about the separate Qiskit project) was later removed as irrelevant to the game, leaving eight. Each has a demo, an optional "More detail" page, and an "In the game" box.
   - Options: `{ top, depth, results }`. With `results`, the sidebar adds Play Again and Main Menu.
   - Opens from:
     - the lesson: topic = stage + 1
@@ -196,7 +196,7 @@ Copies of the puppeteer scripts are in `tools/dev/`: `gallery.mjs`, `smoke.mjs`,
 - **Phase machine** (GameScene): INTRO → ATTEMPT_1 → ATTEMPT_2 → ORACLE_INTRO → MAIN_LOOP → ENDING → RESULTS.
   - Every offering costs a climb.
   - Async steps are guarded by `runId` so a restart discards stale callbacks.
-- **Quantum adapter:** a classical simulation with 350–700 ms latency. It provides `generateTarget`, `runGroverIteration` (returns amplitudes and oracleAmplitudes), `measure` and `resetGrover`.
+- **Quantum adapter:** a classical stand-in, NOT Qiskit and NOT a real quantum simulation: 64 plain numbers changed by closed-form Grover steps (sign flip, reflection about the mean, weighted random draw), with an artificial 350–700 ms delay. It provides `generateTarget`, `runGroverIteration` (returns amplitudes and oracleAmplitudes), `measure` and `resetGrover`. The docs must keep saying this explicitly (user request, 2026-10-11); see README "How the game models the quantum side".
 - **Level layout:**
   - Temple constants are in `src/level.js` (`TEMPLE`, floorTop 530).
   - The climb is generated top-down (`CLIMB`), with moving and crumbling ledges.

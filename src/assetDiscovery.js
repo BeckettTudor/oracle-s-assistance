@@ -1,9 +1,11 @@
 // Finds which optional asset files actually exist, so the loader only requests
 // real files (missing files would otherwise log 404 errors in the console).
 //
-// Static servers such as `python -m http.server` return an HTML listing for a
-// folder URL. We read the links from that listing. If a server gives no
-// listings, we return null and the loader simply tries every manifest path.
+// Static servers such as `python serve.py` return an HTML listing for a
+// folder URL. We read the links from that listing. Hosts that give no
+// listings (GitHub Pages, for one) get assets/files.json instead, written by
+// tools/list_assets.py. If neither is available, we return null and the
+// loader simply tries every manifest path.
 
 export async function discoverAssets(folders) {
   const found = new Set();
@@ -28,5 +30,16 @@ export async function discoverAssets(folders) {
     }
   }));
 
-  return anyListing ? found : null;
+  if (anyListing) return found;
+  return fileList();
+}
+
+async function fileList() {
+  try {
+    const res = await fetch('assets/files.json', { cache: 'no-store' });
+    if (!res.ok) return null;
+    return new Set(await res.json());
+  } catch {
+    return null;
+  }
 }

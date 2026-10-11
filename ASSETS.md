@@ -4,6 +4,8 @@ All artwork is drawn in code (`src/art/`) at one shared pixel scale: every art p
 
 The images you supplied (sprite sheets, texture sheets, backgrounds) remain in `assets/` as **design reference only**; the game doesn't load them.
 
+**After adding or removing files in `assets/`, run `python tools/list_assets.py`.** It rewrites `assets/files.json`, the list of files that exist. Hosts without folder listings, such as GitHub Pages, use that list to request only real files. Locally, `serve.py`'s folder listings are used instead.
+
 ## Portraits
 
 `assets/portraits/hercules.png`, `zeus.png`, `oracle.png`, each 96×96, drawn 1:1. They are prepared from the supplied paintings (`… Portrait.png`) by:
