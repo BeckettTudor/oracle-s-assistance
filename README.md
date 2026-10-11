@@ -1,8 +1,21 @@
 # Oracle's Assistance
 
-A 2D platformer that teaches Grover's algorithm. It was built for Qollab's "Quantum Unlocked" hackathon.
+A 2D platformer that teaches Grover's algorithm.  Built for Qollab's Quantum Unlocked hackathon.
 
 > **The game does not run Qiskit, does not connect to Qollab or any quantum computer, and is not a real quantum simulation.** Its "quantum" side is a small classical stand-in written in plain JavaScript, which reproduces the ideal numbers of Grover's algorithm for a single marked item. See [How the game models the quantum side](#how-the-game-models-the-quantum-side). The project's Qiskit implementation is separate and lives on Qollab.
+
+## Educational Contribution
+Oracle's Assistance aims to connect abstract quantum concepts with decisions and actions that a player can understand intuitively and interact with actively. Its educational contribution is built around three ideas:
+
+Learning by consequence. The impact of the iterations is well explained, and the optimal number is given, but not enforced. This means players can experiment with the number of iterations, and observe the consequences. They can also play many times and observe the potential for an outcome to be incorrect, despite a higher likelihood than not for it to be the correct one.
+
+Making interference and phase shifting properties tangible. The game doesn't present quantum computing as some nebulous ability to test every answer simultaneously. Instead, the game focuses on how the phase changes and interference create a marked shift in probabilities, and how this shift increases with each iteration.
+
+Teaching both the limitations and the advantages. Players interact with the nature of probabilistic measurement, the tradeoff between additional queries and success probability, and the surprising fact that the iterations can overshoot and success chance can be lowered.
+
+The intended audience is those curious about quantum, who are comfortable with basic probability and binary numbers, but have little or no previous quantum-computing experience.
+
+Of the algorithms with a proven quantum advantage, Grover's is, to us, the simplest to begin teaching with. Those who are completely new to the field will get a good introduction to the potential of quantum advantage, and a good intuition of how this technology can potentially provide advantages over classical methods.
 
 ## Running it
 
