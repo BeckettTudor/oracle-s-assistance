@@ -145,16 +145,4 @@ The game shows "The Oracle is consulting…" while a call is pending. If a call 
  
 The simulated latency (350–700 ms) is at the top of the adapter. Set it to 0 if you don't want it.
 
-## Where the build differs from the spec
 
-These changes came from design feedback after Spec Rev 2:
-
-- **The climb is random and repeats for every action.** The spec had a fixed course and an unlimited supply of offerings inside the temple once the lesson was done. Now every blessing and every coin toss costs a climb.
-- **Pots are chosen by tossing the coins, not by picking.** Picking from the 8×8 grid is only used for the two early guesses.
-- **The 8×8 brightness grid became an unlabeled, shuffled bar graph,** so the vision never reveals which pot is likely.
-- **Story text avoids quantum terms.** Coins land Χ/Ο instead of 0/1. The quantum terms appear only in "Quantum view" notes in the lesson, on the altar and in the Grover guide.
-
-These differences come from the first build:
-
-- **World height is 1640 px, not ~2200.** The spec's jump physics (−430 px/s jump, 1100 px/s² gravity) give a jump height of about 84 px, so each step up is held to 62 px or less.
-- **Fall respawn:** the hill has no pits, so a "fall" means dropping more than 220 px below the last checkpoint while carrying an offering. Without an offering, Hercules can drop freely so he can go back to the pile.
